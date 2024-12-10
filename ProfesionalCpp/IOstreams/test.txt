@@ -1,0 +1,5 @@
+There were 3 arguments to this program.
+They are: 
+C:\Users\48727\Desktop\Cplusplus_learning\ProfesionalCpp\IOstreams\main.exe
+asdas
+asdas
