@@ -12,6 +12,8 @@ public:
     Base operator++(int);
     Base& operator--();
     Base operator--(int);
+    int operator()(int param);
+    operator int() const;
 private:
     int value{0};
 };
@@ -34,7 +36,11 @@ int main()
     std::cout << "Testing insertion operator, should be 4: " << b << std::endl;
     std::cout << "Testing extraction operator:" << std::endl;
     std::cin >> b;
-    std::cout << "should be a value that was provided: " << b << std::endl;;
+    std::cout << "should be a value that was provided: " << b << std::endl;
+    std::cout << b(5) << std::endl;
+
+    int conversionOperator = b;
+    std::cout << "Testing conversion operator, should be the same as b value: " << conversionOperator << std::endl;
 
     return 0;
 }
@@ -78,4 +84,15 @@ std::istream& operator>>(std::istream& istr, Base& base)
     istr >> value;
     base.setValue(value);
     return istr;
+}
+
+int Base::operator()(int param)
+{
+    std::cout << "Testing function operator, should be param plus value: " << std::endl;
+    return param + value;
+}
+
+Base::operator int() const
+{
+    return getValue();
 }
