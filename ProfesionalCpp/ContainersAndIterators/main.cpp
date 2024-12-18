@@ -1,6 +1,14 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <functional>
+
+template<typename T>
+void printVector(const std::vector<T>& v)
+{
+    for (auto& element : v) { std::cout << element << " "; }
+    std::cout << std::endl;
+}
 
 void vectorExample1()
 {
@@ -92,10 +100,51 @@ void vectorExample3()
     }
 }
 
+void vectorExample4()
+{
+    std::string str1 = "Hello";
+    std::string str2 = "World";
+
+    std::vector<std::reference_wrapper<std::string>> vec{ ref(str1) };
+    vec.push_back(std::ref(str2));
+    vec[1].get() += "!\n";
+
+    std::cout << str1 << " " << str2;
+}
+
+void vectorExample5()
+{
+    std::vector<int> vectorOne = { 1, 2, 3, 5 };
+    std::vector<int> vectorTwo;
+
+    vectorOne.insert(cbegin(vectorOne) + 3, 4);
+
+    for(int i = 6; i <= 10; ++i)
+    {
+        vectorTwo.push_back(i);
+    }
+    printVector(vectorOne);
+    printVector(vectorTwo);
+
+    vectorOne.insert(cend(vectorOne), cbegin(vectorTwo), cend(vectorTwo));
+    printVector(vectorOne);
+
+    vectorOne.erase(cbegin(vectorOne) + 1, cbegin(vectorOne) + 5);
+    printVector(vectorOne);
+
+    vectorTwo.clear();
+    vectorTwo.insert(cbegin(vectorTwo), 10, 100);
+
+    vectorTwo.pop_back();
+    printVector(vectorTwo);
+}
+
 int main()
 {
     // vectorExample1();
     // vectorExample2();
-    vectorExample3();
+    // vectorExample3();
+    // vectorExample4();
+    vectorExample5();
     return 0;
 }
