@@ -2,6 +2,34 @@
 #include <vector>
 #include <limits>
 #include <functional>
+#include <string_view>
+#include "RoundRobin.hpp"
+
+class Process final
+{
+public:
+    Process(std::string_view name) : mName(name) {}
+    void doWorkDuringTimeSlice()
+    {
+        std::cout << "Process " << mName << " performing work during time slice." << std::endl;
+    }
+
+    bool operator==(const Process& rhs)
+    {
+        return mName == rhs.mName;
+    }
+private:
+    std::string mName;
+};
+class Scheduler final
+{
+public:
+    Scheduler(const std::vector<Process>& processes);
+    void scheduleTimeSlice();
+    void removeProcess(const Process& process);
+private:
+    RoundRobin<Process> mProcesses;
+};
 
 template<typename T>
 void printVector(const std::vector<T>& v)
@@ -139,12 +167,58 @@ void vectorExample5()
     printVector(vectorTwo);
 }
 
+void vectorExample6()
+{
+    std::vector<Process> processes = { Process("1"), Process("2"), Process("3") };
+    Scheduler scheduler(processes);
+    for(int i = 0; i < 4; ++i)
+    {
+        scheduler.scheduleTimeSlice();
+    }
+
+    scheduler.removeProcess(processes[1]);
+    std::cout << "Remove second process" << std::endl;
+    for(int i = 0; i < 4; ++i)
+    {
+        scheduler.scheduleTimeSlice();
+    }
+    scheduler.removeProcess(processes[0]);
+    scheduler.removeProcess(processes[2]);
+    scheduler.scheduleTimeSlice();
+}
+
 int main()
 {
     // vectorExample1();
     // vectorExample2();
     // vectorExample3();
     // vectorExample4();
-    vectorExample5();
+    // vectorExample5();
+    vectorExample6();
     return 0;
+}
+
+Scheduler::Scheduler(const std::vector<Process>& processes)
+{
+    for(auto& process : processes)
+    {
+        mProcesses.add(process);
+    }
+}
+
+void Scheduler::scheduleTimeSlice()
+{
+    try
+    {
+        mProcesses.getNext().doWorkDuringTimeSlice();
+    }
+    catch(const std::out_of_range&)
+    {
+        std::cerr << "No more processes to schedule." << std::endl;
+    }
+}
+
+void Scheduler::removeProcess(const Process& process)
+{
+    mProcesses.remove(process);
 }
