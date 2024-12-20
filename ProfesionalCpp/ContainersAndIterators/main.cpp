@@ -3,6 +3,9 @@
 #include <limits>
 #include <functional>
 #include <string_view>
+#include <list>
+#include <forward_list>
+#include <array>
 #include "RoundRobin.hpp"
 
 class Process final
@@ -187,6 +190,101 @@ void vectorExample6()
     scheduler.scheduleTimeSlice();
 }
 
+void listExample1()
+{
+    std::list<std::string> dictionary { "aardvark", "ambulance" };
+    std::list<std::string> bWords { "bathos", "balderdash" };
+    dictionary.push_back("canticle");
+    dictionary.push_back("consumerism");
+    if(!bWords.empty())
+    {
+        auto iterLastB = --(cend(bWords));
+        auto it = cbegin(dictionary);
+        for(; it != cend(dictionary); ++it)
+        {
+            std::cout << "word from dictionary: " << *it << std::endl;
+            if(*it > *iterLastB)
+            {
+                break;
+            }
+        }
+        dictionary.splice(it, bWords);
+    }
+    for(const auto& word : dictionary)
+    {
+        std::cout << word << std::endl;
+    }
+}
+
+std::list<std::string> getTotalEnrollment(const std::vector<std::list<std::string>>& courseStudents,
+                                          const std::list<std::string>& droppedStudents)
+{
+    std::list<std::string> allStudents;
+    for (auto& lst : courseStudents)
+    {
+        allStudents.insert(cend(allStudents), cbegin(lst), cend(lst));
+    }
+
+    allStudents.sort();
+
+    allStudents.unique();
+
+    for(auto& str : droppedStudents)
+    {
+        allStudents.remove(str);
+    }
+    return allStudents;
+}
+
+void listExample2()
+{
+    std::list<std::string> students = getTotalEnrollment({ {"Kacper", "Kacha", "Adi", "Damian", "Jedrzej", "Tomek"}, 
+                                                           {"Tymek", "Hania", "Adi", "Janek", "Jedrzej", "Mati", "Nati"} },
+                                                           { "Kacper", "Adi", "Tymek" });
+    for(auto& str : students)
+    {
+        std::cout << str << std::endl;
+    }
+}
+
+void forwardListExample()
+{
+    std::forward_list<int> list1 = { 5, 6 };
+    std::forward_list<int> list2 = { 1, 2, 3, 4 };
+    std::forward_list<int> list3 = { 7, 8, 9 };
+
+    list1.splice_after(list1.before_begin(), list2);
+    list1.push_front(0);
+
+    auto iter = list1.before_begin();
+    auto iterTemp = iter;
+    while(++iterTemp != end(list1))
+    {
+        ++iter;
+    }
+    list1.insert_after(iter, cbegin(list3), cend(list3));
+    for(auto& i : list1)
+    {
+        std::cout << i << ' ';
+    }
+}
+
+void arrayExample()
+{
+    std::array<int, 3> arr = { 9, 8, 7};
+    std::cout << "Array size = " << arr.size() << std::endl;
+    for(const auto& i : arr)
+    {
+        std::cout << i << std::endl;
+    }
+    std::cout << "Performing arr.fill(3)..." << std::endl;
+    arr.fill(3);
+    for(auto iter = cbegin(arr); iter != cend(arr); ++iter)
+    {
+        std::cout << *iter << std::endl;
+    }
+}
+
 int main()
 {
     // vectorExample1();
@@ -194,7 +292,11 @@ int main()
     // vectorExample3();
     // vectorExample4();
     // vectorExample5();
-    vectorExample6();
+    // vectorExample6();
+    // listExample1();
+    // listExample2();
+    // forwardListExample();
+    arrayExample();
     return 0;
 }
 
