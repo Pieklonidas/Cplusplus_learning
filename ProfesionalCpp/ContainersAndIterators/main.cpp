@@ -7,6 +7,8 @@
 #include <forward_list>
 #include <array>
 #include "RoundRobin.hpp"
+#include "PacketBuffer.hpp"
+#include "ErrorCorrelator.hpp"
 
 class Process final
 {
@@ -285,6 +287,50 @@ void arrayExample()
     }
 }
 
+void queueExample()
+{
+    PacketBuffer<IPPacket> ipPackets(3);
+    for(int i = 1; i <= 4; ++i)
+    {
+        if(!ipPackets.bufferPacket(IPPacket(i)))
+        {
+            std::cout << "Packet " << i << " dropped (queue is full)." << std::endl;
+        }
+    }
+
+    while (true)
+    {
+        try
+        {
+            IPPacket packet = ipPackets.getNextPacket();
+            std::cout << "Processing packet " << packet.getID() << std::endl;
+        }
+        catch(const std::out_of_range& e)
+        {
+            std::cerr << e.what() << '\n';
+            break;
+        }
+    }
+}
+
+void priorityQueueExample()
+{
+    ErrorCorrelator ec;
+    ec.addError(Error(3, "Unable to read file"));
+    ec.addError(Error(1, "Incorrect entry from user"));
+    ec.addError(Error(10, "Unable to allocate memory!"));
+
+    while (true) {
+        try {
+            Error e = ec.getError();
+            std::cout << e << std::endl;
+        } catch (const std::out_of_range& e) {
+            std::cerr << e.what() << std::endl;
+            break;
+        }
+    }
+}
+
 int main()
 {
     // vectorExample1();
@@ -296,7 +342,9 @@ int main()
     // listExample1();
     // listExample2();
     // forwardListExample();
-    arrayExample();
+    // arrayExample();
+    // queueExample();
+    priorityQueueExample();
     return 0;
 }
 
