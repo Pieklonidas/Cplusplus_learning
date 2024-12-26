@@ -6,9 +6,13 @@
 #include <list>
 #include <forward_list>
 #include <array>
+#include <map>
 #include "RoundRobin.hpp"
 #include "PacketBuffer.hpp"
 #include "ErrorCorrelator.hpp"
+#include "BankAccount.hpp"
+#include "BuddyList.hpp"
+#include "AccessList.hpp"
 
 class Process final
 {
@@ -331,6 +335,176 @@ void priorityQueueExample()
     }
 }
 
+class Data final
+{
+    public:
+        explicit Data(int value = 0) : mValue(value) { }
+        int getValue() const { return mValue; }
+        void setValue(int value) { mValue = value; }
+
+    private:
+        int mValue;
+}; 
+
+void mapExample1()
+{
+    std::map<int, Data> dataMap;
+
+    auto ret = dataMap.insert({ 1, Data(4) });
+    if( ret.second )
+    {
+        std::cout << "Insert succeeded!" << std::endl;
+    }
+    else
+    {
+        std::cout << "Insert failed" << std::endl;
+    }
+
+    
+    if(auto[iter, success] = dataMap.insert(std::make_pair(1, Data(6) )); success )
+    {
+        std::cout << "Insert succeeded!" << std::endl;
+    }
+    else
+    {
+        std::cout << "Insert failed" << std::endl;
+    }
+
+    if(auto[iter, success] = dataMap.insert_or_assign(1, Data(7)); success)
+    {
+        std::cout << "Inserted!" << std::endl;
+    }
+    else
+    {
+        std::cout << "Overwritten" << std::endl;
+    }
+    if(auto[iter, success] = dataMap.insert_or_assign(5, Data(10)); success)
+    {
+        std::cout << "Inserted!" << std::endl;
+    }
+    else
+    {
+        std::cout << "Overwritten" << std::endl;
+    }
+
+    for(auto iter = cbegin(dataMap); iter != cend(dataMap); ++iter)
+    {
+        std::cout << iter->second.getValue() << std::endl;
+    }
+
+    auto it = dataMap.find(1);
+    if(it != end(dataMap))
+    {
+        it->second.setValue(100);
+    }
+    std::cout << "After changing value for the key: 1\n";
+    for(auto iter = cbegin(dataMap); iter != cend(dataMap); ++iter)
+    {
+        std::cout << iter->second.getValue() << std::endl;
+    }
+    std::cout << "There are " << dataMap.count(1) << " elements with key 1\n";
+    dataMap.erase(1);
+    std::cout << "There are " << dataMap.count(1) << " elements with key 1\n";
+
+    std::map<int, Data> dataMap2;
+    std::cout << "There are " << dataMap.count(5) << " elements with key 5\n";
+    auto extractedNode = dataMap.extract(5);
+    std::cout << "There are " << dataMap.count(5) << " elements with key 5\n";
+    dataMap2.insert(std::move(extractedNode));
+
+    for(auto iter = cbegin(dataMap2); iter != cend(dataMap2); ++iter)
+    {
+        std::cout << iter->second.getValue() << std::endl;
+    }
+
+    std::map<int, int> src = { {1, 11}, {2, 22} };
+    std::map<int, int> dst = { {2, 23}, {3, 33}, {4, 44}, {5, 55} };
+    dst.merge(src);
+    for(const auto& [key, value] : src)
+    {
+        std::cout << "Key: " << key << " value: " << value << std::endl;
+    }
+
+    for(const auto& [key, value] : dst)
+    {
+        std::cout << "Key: " << key << " value: " << value << std::endl;
+    }
+}
+
+void mapExample2()
+{
+    BankDB db;
+    db.addAccount(BankAccount(100, "Nicholas Solter"));
+    db.addAccount(BankAccount(200, "Scott Kleper"));
+
+    try
+    {
+        auto& acct = db.findAccount(100);
+        std::cout << "Found account " << acct.getAcctNum() << ", it belongs to: " << acct.getClientName() << std::endl;
+        acct.setClientName("Nicholas A Solter");
+        std::cout << "Found account " << acct.getAcctNum() << ", it belongs to: " << acct.getClientName() << std::endl;
+
+        {
+            auto& acct2 = db.findAccount("Scott Kleper");
+            std::cout << "Found account for " << acct2.getClientName() << ", with number " << acct2.getAcctNum() << std::endl;
+            acct2.setAcctNum(220);
+        }
+
+        auto& acct3 = db.findAccount(220); // We have changed number only in the Bank accout but it has no
+                                           // impact on the key in the map in the Data Base, so the key stays
+                                           // the same and we are not able to find the account for Scott Kleper
+        std::cout << "Found account " << acct3.getAcctNum() << ", it belongs to: " << acct3.getClientName() << std::endl;
+
+        auto& acct4 = db.findAccount(312);
+    }
+    catch(const std::out_of_range& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+}
+
+void multimapExample2()
+{
+    BuddyList buddies;
+    buddies.addBuddy("Harry Potter", "Ron Weasley");
+    buddies.addBuddy("Harry Potter", "Hermione Granger");
+    buddies.addBuddy("Harry Potter", "Hagrid");
+    buddies.addBuddy("Harry Potter", "Hagrid");
+    buddies.addBuddy("Harry Potter", "Draco Malfoy");
+
+    buddies.removeBuddy("Harry Potter", "Draco Malfoy");
+    buddies.addBuddy("Hagrid", "Harry Potter");
+    buddies.addBuddy("Hagrid", "Ron Weasley");
+    buddies.addBuddy("Hagrid", "Hermione Granger");
+
+    auto harrysFriends = buddies.getBuddies("Harry Potter");
+
+    std::cout << "Harry's friends: " << std::endl;
+    for (const auto& name : harrysFriends) {
+        std::cout << "\t" << name << std::endl;
+    }
+}
+
+void setExample()
+{
+    AccessList fileX = { "pvw", "mgregoire", "baduser" };
+    fileX.removeUser("baduser");
+
+    if (fileX.isAllowed("mgregoire")) {
+        std::cout << "mgregoire has permissions" << std::endl;
+    }
+
+    if (fileX.isAllowed("baduser")) {
+        std::cout << "baduser has permissions" << std::endl;
+    }
+
+    auto users = fileX.getAllUsers();
+    for (const auto& user : users) {
+        std::cout << user << "  ";
+    }
+}
+
 int main()
 {
     // vectorExample1();
@@ -344,7 +518,11 @@ int main()
     // forwardListExample();
     // arrayExample();
     // queueExample();
-    priorityQueueExample();
+    // priorityQueueExample();
+    // mapExample1();
+    // mapExample2();
+    // multimapExample2();
+    setExample();
     return 0;
 }
 

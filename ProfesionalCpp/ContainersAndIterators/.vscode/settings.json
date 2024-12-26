@@ -52,6 +52,9 @@
         "array": "cpp",
         "deque": "cpp",
         "forward_list": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "map": "cpp",
+        "xtree": "cpp",
+        "set": "cpp"
     }
 }
