@@ -13,6 +13,7 @@
 #include "BankAccount.hpp"
 #include "BuddyList.hpp"
 #include "AccessList.hpp"
+#include "CableCompany.hpp"
 
 class Process final
 {
@@ -505,6 +506,63 @@ void setExample()
     }
 }
 
+template <class T>
+void printMap(const T& m)
+{
+    for(auto& [key, value] : m)
+    {
+        std::cout << key << " (Phone: " << value << ")" << std::endl;
+    }
+    std::cout << "---------------" << std::endl;
+}
+
+void unorderedMapExample()
+{
+    std::unordered_map<std::string, std::string> phoneBook = 
+    {
+        { "Marc G.", "123-456789" },
+        { "Scott K.", "654-987321" }
+    };
+
+    phoneBook.insert(std::make_pair("John D.", "321-987654"));
+    phoneBook["Johan G."] = "963-258147";
+    phoneBook["Freddy K."] = "999-256256";
+    phoneBook.erase("Freddy K.");
+    printMap(phoneBook);
+
+    const size_t bucket = phoneBook.bucket("Marc G.");
+    std::cout << "Marc G. is in bucket " << bucket
+              << " which contains the following "
+              << phoneBook.bucket_size(bucket) << " elements:" << std::endl;
+    
+    auto localBegin = phoneBook.cbegin(bucket);
+    auto localEnd = phoneBook.cend(bucket);
+    for (auto iter = localBegin; iter != localEnd; ++iter) {
+        std::cout << "\t" << iter->first << " (Phone: "
+                  << iter->second << ")" << std::endl;
+    }
+    std::cout << "-------" << std::endl;
+
+    std::cout << "There are " << phoneBook.bucket_count() << " buckets." << std::endl;
+    std::cout << "Average number of elements in a bucket is " << phoneBook.load_factor() << std::endl;
+}
+
+void bitsetExample()
+{
+    CableCompany myCC;
+    auto basic_pkg = "1111000000";
+    auto premium_pkg = "1111111111";
+    auto sports_pkg = "0000100111";
+
+    myCC.addPackage("basic", std::bitset<kNumChannels>(basic_pkg));
+    myCC.addPackage("premium", std::bitset<kNumChannels>(premium_pkg));
+    myCC.addPackage("sports", std::bitset<kNumChannels>(sports_pkg));
+
+    myCC.newCustomer("Marc G.", "basic");
+    myCC.addPackageToCustomer("Marc G.", "sports");
+    std::cout << myCC.getCustomerChannels("Marc G.") << std::endl;
+}
+
 int main()
 {
     // vectorExample1();
@@ -522,7 +580,9 @@ int main()
     // mapExample1();
     // mapExample2();
     // multimapExample2();
-    setExample();
+    // setExample();
+    // unorderedMapExample();
+    bitsetExample();
     return 0;
 }
 

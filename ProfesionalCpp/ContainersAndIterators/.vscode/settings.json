@@ -55,6 +55,7 @@
         "queue": "cpp",
         "map": "cpp",
         "xtree": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "bitset": "cpp"
     }
 }
