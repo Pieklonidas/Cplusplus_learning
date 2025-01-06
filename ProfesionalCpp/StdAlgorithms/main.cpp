@@ -6,6 +6,7 @@
 #include <functional>
 #include <string>
 #include <string_view>
+#include <list>
 
 bool perfectScore(int num)
 {
@@ -165,11 +166,154 @@ void bindExample()
     }
 }
 
+void searchExample()
+{
+    std::vector<int> vec{ 5, 6, 9, 8, 8, 3 };
+    auto beginIter = cbegin(vec);
+    auto endIter = cend(vec);
+
+    auto it = find_if_not(beginIter, endIter, [](int i){ return i < 8; });
+    if(it != endIter)
+    {
+        std::cout << "First element not < 8 i is " << *it << std::endl;
+    }
+
+    it = std::adjacent_find(beginIter, endIter);
+    if(it != endIter)
+    {
+        std::cout << "Found two consecutive equal elements with value " << *it << std::endl;
+        std::cout << "It's on the position: " << it - beginIter << std::endl;
+    }
+    std::vector<int> targets = { 8, 9 };
+    it = std::find_first_of(beginIter, endIter, cbegin(targets), cend(targets));
+    if(it != endIter)
+    {
+        std::cout << "Found one of 8 or 9: " << *it << std::endl;
+        std::cout << "It's on the position: " << it - beginIter << std::endl;
+    }
+
+    std::vector<int> sub = { 8, 3 };
+    it = std::search(beginIter, endIter, cbegin(sub), cend(sub));
+    if(it != endIter)
+    {
+        std::cout << "Found subsequence {8, 3}" << std::endl;
+        std::cout << "It's on the position: " << it - beginIter << std::endl;
+    }
+    else
+    {
+        std::cout << "Unable to find subsequence {8,3}" << std::endl;
+    }
+
+    it = search_n(beginIter, endIter, 2, 8);
+    if(it != endIter)
+    {
+        std::cout << "Found two consecutive 8s" << std::endl;
+        std::cout << "It's on the position: " << it - beginIter << std::endl;
+    }
+    else
+    {
+        std::cout << "Unable to find two consecutive 8s" << std::endl;
+    }
+}
+
+template<typename Container>
+void populateContainer(Container& cont)
+{
+    int num;
+    while (true)
+    {
+        std::cout << "Enter a number (0 to quit): ";
+        std::cin >> num;
+        if(num == 0)
+        {
+            break;
+        }
+        cont.push_back(num);
+    }
+}
+
+void compareExample()
+{
+    std::vector<int> myVector;
+    std::list<int> myList;
+
+    std::cout << "Populate the vector: " << std::endl;
+    populateContainer(myVector);
+    std::cout << "Populate the list: " << std::endl;
+    populateContainer(myList);
+
+    auto vecBeginIt = cbegin(myVector);
+    auto vecEndIt = cend(myVector);
+    auto listBeginIt = cbegin(myList);
+    auto listEndIt = cend(myList);
+
+    if(std::equal(vecBeginIt, vecEndIt, listBeginIt, listEndIt))
+    {
+        std::cout << "The two containers have equal elements" << std::endl;
+    }
+    else
+    {
+        auto miss = std::mismatch(vecBeginIt, vecEndIt, listBeginIt, listEndIt);
+        std::cout << "The following initial elements are the same in "
+                  << "the vector and the list:" << std::endl;
+        for(auto i = vecBeginIt; i != miss.first; ++i)
+        {
+            std::cout << *i << '\t';
+
+        }
+        std::cout << std::endl;
+    }
+    if(std::lexicographical_compare(vecBeginIt, vecEndIt, listBeginIt, listEndIt))
+    {
+        std::cout << "The vector is lexicographically first." << std::endl;
+    }
+    else
+    {
+        std::cout << "The list is lexicographically first." << std::endl;
+    }
+}
+
+void countExample()
+{
+    std::vector<int> vec2{ 1, 1, 1, 1 };
+    if(std::all_of(cbegin(vec2), cend(vec2), [](int i){ return i == 1; }))
+    {
+        std::cout << "All elements are == 1" << std::endl;
+    }
+    else
+    {
+        std::cout << "Not all elements are == 1" << std::endl;
+    }
+
+    std::vector<int> vec3{ 0, 0, 1, 0 };
+    if(std::any_of(cbegin(vec3), cend(vec3), [](int i){ return i == 1; }))
+    {
+        std::cout << "At least one element == 1" << std::endl;
+    }
+    else
+    {
+        std::cout << "No elements are == 1" << std::endl;
+    }
+
+    std::vector<int> vec4{ 0, 0, 0, 0 };
+    if(std::none_of(cbegin(vec4), cend(vec4), [](int i){ return i == 1; }))
+    {
+        std::cout << "All elements are =/= 1" << std::endl;
+    }
+    else
+    {
+        std::cout << "Not all elements are =/= 1" << std::endl;
+    }
+}
+
 int main()
 {
     // findExample();
     // functionExample();
     // lambdaExample();
-    bindExample();
+    // bindExample();
+    // searchExample();
+    // compareExample();
+    countExample();
     return 0;
 }
