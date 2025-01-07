@@ -306,6 +306,86 @@ void countExample()
     }
 }
 
+template <typename T>
+void printContainer(const std::vector<T>& con)
+{
+    std::cout << "The vector contains:" << std::endl;
+    for(const auto& i : con) { std::cout << i << " "; }
+    std::cout << std::endl;
+}
+
+void transformExample()
+{
+    std::vector<int> myVector;
+    populateContainer(myVector);
+    printContainer(myVector);
+
+    std::transform(begin(myVector), end(myVector), begin(myVector), [](int i){ return i+100; });
+    printContainer(myVector);
+
+    std::vector<int> vec1, vec2;
+    std::cout << "Vector1:" << std::endl; populateContainer(vec1);
+    std::cout << "Vector2:" << std::endl; populateContainer(vec2);
+
+    if(vec2.size() < vec1.size())
+    {
+        std::cout << "Vector2 should be at least the same size as vector1." << std::endl;
+        return;
+    }
+    std::cout << "Vector1 "; printContainer(vec1);
+    std::cout << "Vector2 "; printContainer(vec2);
+
+    std::transform(begin(vec1), end(vec1), begin(vec2), begin(vec1), [](int a, int b){ return a+b; });
+    std::cout << "Vector1 "; printContainer(vec1);
+    std::cout << "Vector2 "; printContainer(vec2);
+}
+
+void copyExample()
+{
+    std::vector<int> vec1, vec2;
+    populateContainer(vec1);
+    vec2.resize(vec1.size());
+    std::copy(cbegin(vec1), cend(vec1), begin(vec2));
+    printContainer(vec2);
+
+    std::copy_backward(cbegin(vec1), cend(vec1), end(vec2));
+    printContainer(vec2);
+
+    auto endIterator = std::copy_if(cbegin(vec1), cend(vec1), begin(vec2), [](int i){ return i%2 == 0; });
+    printContainer(vec2);
+    vec2.erase(endIterator, end(vec2));
+    printContainer(vec2);
+
+    vec1.clear();
+    vec2.clear();
+    populateContainer(vec1);
+    size_t cnt = 0;
+    std::cout << "Enter number of elements you want to copy: ";
+    std::cin >> cnt;
+    cnt = std::min(cnt, size(vec1));
+    vec2.resize(cnt);
+    std::copy_n(cbegin(vec1), cnt, begin(vec2));
+    printContainer(vec2);
+}
+
+void replaceExample()
+{
+    std::vector<int> vec { 1, 2, 3, 4, 5 };
+    std::replace_if(begin(vec), end(vec), [](int i){ return i % 2 != 0; }, 0);
+    printContainer(vec);
+}
+
+void removeExample()
+{
+    std::vector<std::string> myVector{"", "one", "", "two", "three", "four"};
+    printContainer(myVector);
+    
+    auto it = remove_if(begin(myVector), end(myVector), [](const std::string& str){ return str.empty(); });
+    myVector.erase(it, end(myVector));
+
+    printContainer(myVector);
+}
+
 int main()
 {
     // findExample();
@@ -314,6 +394,10 @@ int main()
     // bindExample();
     // searchExample();
     // compareExample();
-    countExample();
+    // countExample();
+    // transformExample();
+    // copyExample();
+    // replaceExample();
+    removeExample();
     return 0;
 }
