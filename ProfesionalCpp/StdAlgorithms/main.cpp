@@ -7,6 +7,8 @@
 #include <string>
 #include <string_view>
 #include <list>
+#include <map>
+#include <utility>
 
 bool perfectScore(int num)
 {
@@ -386,6 +388,151 @@ void removeExample()
     printContainer(myVector);
 }
 
+void forEachExample()
+{
+    std::map<int, int> myMap = { {4, 40}, {5, 50}, {6, 60} };
+    std::for_each(cbegin(myMap), cend(myMap), [](const auto& p){ std::cout << p.first << "->" << p.second << std::endl; } );
+
+    std::vector<int> myVector;
+    populateContainer(myVector);
+
+    int sum = 0;
+    int product = 1;
+    std::for_each(cbegin(myVector), cend(myVector), [&sum, &product](int i){ sum += i; product *= i; });
+    std::cout << "The sum is " << sum << std::endl;
+    std::cout << "The product is " << product << std::endl;
+}
+
+void swapAndExchangeExample()
+{
+    int a = 11;
+    int b = 22;
+    std::cout << "Before swap(): a = " << a << ", b = " << b << std::endl;
+    std::swap(a,b);
+    std::cout << "After swap(): a = " << a << ", b = " << b << std::endl;
+
+    a = 11;
+    b = 22;
+    std::cout << "Before exchange(): a = " << a << ", b = " << b << std::endl;
+    int returnedValue = std::exchange(a,b);
+    std::cout << "After exchange(): a = " << a << ", b = " << b << std::endl;
+    std::cout << "exchange() returned: " << returnedValue << std::endl;
+}
+
+void partitionExample()
+{
+    std::vector<int> vec1, vecOdd, vecEven;
+    populateContainer(vec1);
+    vecOdd.resize(size(vec1)); vecEven.resize(size(vec1));
+    auto pairIters = std::partition_copy(cbegin(vec1), cend(vec1), begin(vecEven), begin(vecOdd), [](int i){ return i%2 == 0; });
+    vecEven.erase(pairIters.first, end(vecEven));
+    vecOdd.erase(pairIters.second, end(vecOdd));
+
+    std::cout << "Even numbers: ";
+    printContainer(vecEven);
+    std::cout << "Odd numbers: ";
+    printContainer(vecOdd);
+
+    std::vector<int> vec;
+    populateContainer(vec);
+    std::partition(begin(vec), end(vec), [](int i){ return i%2 == 0; });
+    std::cout << "Partitioned result: ";
+    printContainer(vec);
+}
+
+void binarySearchExample()
+{
+    std::vector<int> vec;
+    populateContainer(vec);
+    std::sort(begin(vec), end(vec));
+    std::cout << "Sorted vector: ";
+    printContainer(vec);
+    while (true)
+    {
+        int num;
+        std::cout << "Enter a number to insert (0 to quit): ";
+        std::cin >> num;
+        if (num == 0)
+        {
+            break;
+        }
+
+        auto iter = std::lower_bound(begin(vec), end(vec), num);
+        vec.insert(iter, num);
+
+        std::cout << "New vector: ";
+        printContainer(vec);
+    }
+    
+    while (true)
+    {
+        int num;
+        std::cout << "Enter a number to find (0 to quit): ";
+        std::cin >> num;
+        if (num == 0)
+        {
+            break;
+        }
+        if(std::binary_search(cbegin(vec), cend(vec), num))
+        {
+            std::cout << "That number is in the vector." << std::endl;
+        }
+        else
+        {
+            std::cout << "That number is not in the vector." << std::endl;
+        }
+    }
+}
+
+template<typename Iterator>
+void DumpRange(std::string_view message, Iterator begin, Iterator end)
+{
+    std::cout << message;
+    for_each(begin, end, [](const auto& element) { std::cout << element << " "; });
+    std::cout << std::endl;
+}
+
+void setAlgorithmsExample()
+{
+    std::vector<int> vec1, vec2, result;
+    std::cout << "Enter elements for set 1:" << std::endl;
+    populateContainer(vec1);
+    std::cout << "Enter elements for set 2:" << std::endl;
+    populateContainer(vec2);
+
+    std::sort(begin(vec1), end(vec1));
+    std::sort(begin(vec2), end(vec2));
+
+    DumpRange("Set 1: ", cbegin(vec1), cend(vec1));
+    DumpRange("Set 2: ", cbegin(vec2), cend(vec2));
+
+    if(std::includes(cbegin(vec1), cend(vec1), cbegin(vec2), cend(vec2)))
+    {
+        std::cout << "The second set is a subset of the first." << std::endl;
+    }
+    if(std::includes(cbegin(vec2), cend(vec2), cbegin(vec1), cend(vec1)))
+    {
+        std::cout << "The first set is a subset of the second." << std::endl;
+    }
+
+    result.resize(size(vec1) + size(vec2));
+    auto newEnd = std::set_union(cbegin(vec1), cend(vec1), cbegin(vec2), cend(vec2), begin(result));
+    DumpRange("The union is: ", begin(result), newEnd);
+    
+    newEnd = std::set_intersection(cbegin(vec1), cend(vec1), cbegin(vec2), cend(vec2), begin(result));
+    DumpRange("The intersection is: ", begin(result), newEnd);
+
+    newEnd = std::set_difference(cbegin(vec1), cend(vec1), cbegin(vec2), cend(vec2), begin(result));
+    DumpRange("The difference is: ", begin(result), newEnd);
+
+    newEnd = std::set_symmetric_difference(cbegin(vec1), cend(vec1), cbegin(vec2), cend(vec2), begin(result));
+    DumpRange("The symmetric difference is: ", begin(result), newEnd);
+
+    std::merge(cbegin(vec1), cend(vec1), cbegin(vec2), cend(vec2), begin(result));
+
+    DumpRange("Merged vector: ", cbegin(result), cend(result));
+}
+
 int main()
 {
     // findExample();
@@ -398,6 +545,11 @@ int main()
     // transformExample();
     // copyExample();
     // replaceExample();
-    removeExample();
+    // removeExample();
+    // forEachExample();
+    // swapAndExchangeExample();
+    // partitionExample();
+    // binarySearchExample();
+    setAlgorithmsExample();
     return 0;
 }
