@@ -8,6 +8,7 @@
 #include <string_view>
 #include <list>
 #include <map>
+#include <set>
 #include <utility>
 
 bool perfectScore(int num)
@@ -492,6 +493,20 @@ void DumpRange(std::string_view message, Iterator begin, Iterator end)
     std::cout << std::endl;
 }
 
+void numericalAlgorithmsExample()
+{
+    std::vector<int> v1{ 1, 2, 3, 4 };
+    std::vector<int> v2{ 9, 8, 7, 6 };
+    std::cout << "Inner product:\n";
+    std::cout << std::inner_product(cbegin(v1), cend(v1), cbegin(v2), 0) << std::endl;
+
+    std::vector<int> vec(10);
+    std::iota(begin(vec), end(vec), 5);
+    printContainer(vec);
+
+    std::cout << "gcd: " << std::gcd(3, 18) << " lcm: " << std::lcm(3, 18) << '\n';
+}
+
 void setAlgorithmsExample()
 {
     std::vector<int> vec1, vec2, result;
@@ -533,6 +548,78 @@ void setAlgorithmsExample()
     DumpRange("Merged vector: ", cbegin(result), cend(result));
 }
 
+using VotersMap = std::map<std::string, std::vector<std::string>>;
+using DistrictPair = std::pair<const std::string, std::vector<std::string>>;
+
+std::set<std::string> getDuplicates(const VotersMap& votersByDistrict)
+{
+    std::vector<std::string> allNames;
+    for(auto& [_, voters] : votersByDistrict)
+    {
+        allNames.insert(end(allNames), begin(voters), end(voters));
+    }
+
+    std::sort(begin(allNames), end(allNames));
+
+    std::set<std::string> duplicates;
+    for(auto lit = cbegin(allNames); lit != cend(allNames); ++lit)
+    {
+        lit = std::adjacent_find(lit, cend(allNames));
+        if (lit == cend(allNames))
+        {
+            break;
+        }
+        duplicates.insert(*lit);
+    }
+    return duplicates;
+}
+
+void auditVoterRolls(VotersMap& votersByDistrict, const std::vector<std::string>& convictedFelons)
+{
+    std::set<std::string> toRemove = getDuplicates(votersByDistrict);
+    toRemove.insert(cbegin(convictedFelons), cend(convictedFelons));
+
+    std::for_each(begin(votersByDistrict), end(votersByDistrict), 
+        [&toRemove](DistrictPair& district)
+        { 
+            auto it = std::remove_if(begin(district.second), end(district.second),
+            [&toRemove](const std::string& name){ return toRemove.count(name) > 0; });
+            district.second.erase(it, end(district.second));
+        });
+}
+
+void TestingAuditVoterRolls()
+{
+    VotersMap voters = {
+        {"Orange", {"Amy Aardvark", "Bob Buffalo",
+                "Charles Cat", "Dwayne Dog"}},
+        {"Los Angeles", {"Elizabeth Elephant", "Fred Flamingo",
+                        "Amy Aardvark"}},
+        {"San Diego", {"George Goose", "Heidi Hen", "Fred Flamingo"} }
+    };
+    std::vector<std::string> felons = {"Bob Buffalo", "Charles Cat"};
+
+    auto printDistrict = [](const DistrictPair& district)
+    {
+        std::cout << district.first << ":";
+        for(const auto& str : district.second)
+        {
+            std::cout << " {" << str <<  "}";
+        }
+        std::cout << '\n';
+    };
+
+    std::cout << "Before Audit:" << std::endl;
+    for(const auto& district : voters) { printDistrict(district); }
+    std::cout << std::endl;
+
+    auditVoterRolls(voters, felons);
+
+    std::cout << "After Audit:" << std::endl;
+    for(const auto& district : voters) { printDistrict(district); }
+    std::cout << std::endl;
+}
+
 int main()
 {
     // findExample();
@@ -550,6 +637,8 @@ int main()
     // swapAndExchangeExample();
     // partitionExample();
     // binarySearchExample();
-    setAlgorithmsExample();
+    // setAlgorithmsExample();
+    // numericalAlgorithmsExample();
+    TestingAuditVoterRolls();
     return 0;
 }
