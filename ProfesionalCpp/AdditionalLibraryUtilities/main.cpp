@@ -4,6 +4,12 @@
 #include <chrono>
 #include <ctime>
 #include <cmath>
+#include <random>
+#include <functional>
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <optional>
 
 
 void rationExample()
@@ -97,10 +103,77 @@ void clockExample()
     std::cout << tpMilliseconds.time_since_epoch().count() << " ms" << std::endl;
 }
 
+void randomNumberEnginesExample()
+{
+    std::random_device rnd;
+    std::cout << "Entropy: " << rnd.entropy() << std::endl;
+    std::cout << "Min value: " << rnd.min()
+              << ", Max value: " << rnd.max() << std::endl;
+    std::cout << "Random number: " << rnd() << std::endl;
+
+    const unsigned int kStart = 1;
+    const unsigned int kEnd = 99;
+
+    std::random_device seeder;
+    const auto seed = seeder.entropy() ? seeder() : std::time(nullptr);
+    std::mt19937 eng(static_cast<std::mt19937::result_type>(seed));
+    std::uniform_int_distribution<int> dist(kStart, kEnd);
+    std::cout << dist(eng) << std::endl;
+
+    auto gen = std::bind(dist, eng);
+
+    std::vector<int> vec(10);
+    std::generate(begin(vec), end(vec), gen);
+    for (auto i : vec) { std::cout << i << "  "; }
+    std::cout << std::endl;
+
+    const unsigned int kIterations = 1'000'000;
+
+    std::map<int, int> m;
+    for(unsigned int i = 0; i < kIterations; ++i)
+    {
+        int rnd = gen();
+        ++(m[rnd]);
+    }
+
+    for (unsigned int i = kStart; i <= kEnd; ++i)
+    {
+        std::cout << i << ": " << m[i] << std::endl;
+    }
+}
+
+std::optional<int> getData(bool giveIt)
+{
+    if(giveIt)
+    {
+        return 42;
+    }
+    return std::nullopt;
+}
+
+void optionalExample()
+{
+    auto data1 = getData(true);
+    auto data2 = getData(false);
+
+    std::cout << "data1.has_value = " << data1.has_value() << std::endl;
+    if(data2)
+    {
+        std::cout << "data2 has a value." << std::endl;
+    }
+
+    std::cout << "data1.value = " << data1.value() << std::endl;
+    std::cout << "data1.value = " << *data1 << std::endl;
+
+    std::cout << "data2.value = " << data2.value_or(0) << std::endl;
+}
+
 int main()
 {   
     // rationExample();
     // durationExample();
-    clockExample();
+    // clockExample();
+    // randomNumberEnginesExample();
+    optionalExample();
     return 0;
 }
