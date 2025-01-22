@@ -10,7 +10,9 @@
 #include <vector>
 #include <map>
 #include <optional>
-
+#include <variant>
+#include <any>
+#include <string>
 
 void rationExample()
 {
@@ -168,12 +170,76 @@ void optionalExample()
     std::cout << "data2.value = " << data2.value_or(0) << std::endl;
 }
 
+class MyVisitor
+{
+    public:
+        void operator()(int i) { std::cout << "int " << i << std::endl; }
+        void operator()(const std::string& s) { std::cout << "string " << s << std::endl; }
+        void operator()(float f) { std::cout << "float " << f << std::endl; }
+};
+
+void variantExample()
+{
+    std::variant<int, std::string, float> v;
+    v = 12;
+    v = 12.5f;
+    v = "An std::string";
+
+    std::cout << "Type index: " << v.index() << std::endl;
+    std::cout << "Contains an int: " << std::holds_alternative<int>(v) << std::endl;
+
+    std::cout << std::get<std::string>(v) << std::endl;
+    try
+    {
+        std::cout << std::get<0>(v) << std::endl;
+    }
+    catch(const std::bad_variant_access& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+    std::string* theString = std::get_if<std::string>(&v);
+    int* theInt = std::get_if<int>(&v);
+    std::cout << "retrieved string: " << (theString ? *theString : "null") << std::endl;
+    std::cout << "retrieved int: " << (theInt ? *theInt : 0) << std::endl;
+
+    std::visit(MyVisitor(), v);
+}
+
+void anyExample()
+{
+    using namespace std::string_literals;
+    std::any empty;
+    std::any anInt(3);
+    std::any aString("An std::string."s);
+
+    std::cout << "empty.has_value = " << empty.has_value() << std::endl;
+    std::cout << "anInt.has_value = " << anInt.has_value() << std::endl;
+
+    std::cout << "anInt wrapped type = " << anInt.type().name() << std::endl;
+    std::cout << "aString wrapped type = " << aString.type().name() << std::endl;
+
+    int theInt = std::any_cast<int>(anInt);
+    std::cout << theInt << std::endl;
+
+    try
+    {
+        int test = std::any_cast<int>(aString);
+    }
+    catch(const std::bad_any_cast& e)
+    {
+        std::cerr << "Exception: " << e.what() << '\n';
+    }   
+}
+
 int main()
 {   
     // rationExample();
     // durationExample();
     // clockExample();
     // randomNumberEnginesExample();
-    optionalExample();
+    // optionalExample();
+    // variantExample();
+    anyExample();
     return 0;
 }
