@@ -142,7 +142,86 @@ void iteratorTraitsExample()
     iteratorTraitsTest(begin(v));
 }
 
+void hashMapExample()
+{
+    ProCpp::hash_map<int, int> myHash;
+    myHash.insert(std::make_pair(4, 40));
+    myHash.insert(std::make_pair(6, 60));
 
+    auto x = myHash.find(4);
+    if(x != nullptr)
+    {
+        std::cout << "4 maps to " << x->second << std::endl;
+    }
+    else
+    {
+        std::cout << "cannot find 4 in map" << std::endl;
+    }
+
+    myHash.erase(4);
+    auto x2 = myHash.find(4);
+    if(x2 != nullptr)
+    {
+        std::cout << "4 maps to " << x2->second << std::endl;
+    }
+    else
+    {
+        std::cout << "cannot find 4 in map" << std::endl;
+    }
+
+    myHash[4] = 35;
+    myHash[4] = 64;
+
+    auto x3 = myHash.find(4);
+    if(x3 != nullptr)
+    {
+        std::cout << "4 maps to " << x3->second << std::endl;
+    }
+    else
+    {
+        std::cout << "cannot find 4 in map" << std::endl;
+    }
+
+    ProCpp::hash_map<int, int> other(std::equal_to<>(), 11);
+    ProCpp::swap(other, myHash);
+    auto x4 = other.find(4);
+    if(x4 != nullptr)
+    {
+        std::cout << "4 maps to " << x4->second << std::endl;
+    }
+    else
+    {
+        std::cout << "cannot find 4 in map" << std::endl;
+    }
+
+    ProCpp::hash_map<int, int> myHash2(other);
+    ProCpp::hash_map<int, int> myHash3;
+    myHash3 = myHash2;
+
+    auto x5 = myHash3.find(4);
+    if(x5 != nullptr)
+    {
+        std::cout << "4 maps to " << x5->second << std::endl;
+    }
+    else
+    {
+        std::cout << "cannot find 4 in map" << std::endl;
+    }
+
+    ProCpp::hash_map<int, int> myHash4(std::move(myHash3));
+    ProCpp::hash_map<int, int> myHash5;
+    myHash5 = std::move(myHash4);
+
+    auto x6 = myHash5.find(4);
+    if(x6 != nullptr)
+    {
+        std::cout << "4 maps to " << x6->second << std::endl;
+    }
+    else
+    {
+        std::cout << "cannot find 4 in map" << std::endl;
+    }
+}
 
 int main()
 {  
@@ -150,5 +229,6 @@ int main()
     // iteratorAdaptorsExample();
     // findAllExample();
     // iteratorTraitsExample();
+    hashMapExample();
     return 0;
 }
