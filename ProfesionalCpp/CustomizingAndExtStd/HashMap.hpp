@@ -4,6 +4,7 @@
 #include <list>
 #include <stdexcept>
 #include <algorithm>
+#include "HashMapIterator.hpp"
 
 namespace ProCpp
 {
@@ -52,6 +53,21 @@ public:
     using key_type = Key;
     using mapped_type = T;
     using value_type = std::pair<const Key, T>;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
+    using hash_map_type = hash_map<Key, T, KeyEqual, Hash>;
+
+    using iterator = hash_map_iterator<hash_map_type>;
+    using const_iterator = const_hash_map_iterator<hash_map_type>;
+
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
+    const_iterator cbegin() const;
+    const_iterator cend() const;
 
     virtual ~hash_map() = default;
 
@@ -75,6 +91,12 @@ public:
 
     void swap(hash_map<Key, T, KeyEqual, Hash>& other) noexcept;
 
+    bool empty() const;
+    size_type size() const;
+    size_type max_size() const;
+
+    friend iterator;
+    friend const_iterator;
 private:
     using ListType = std::list<value_type>;
 
@@ -102,7 +124,7 @@ std::pair<typename hash_map<Key, T, KeyEqual, Hash>::ListType::iterator, size_t>
 {
     size_t bucket = mHash(k) % mBuckets.size();
 
-    auto iter = std::find_if(begin(mBuckets[bucket]), end(mBuckets[bucket]),
+    auto iter = std::find_if(std::begin(mBuckets[bucket]), std::end(mBuckets[bucket]),
          [this, &k](const auto& element){ return mEqual(element.first, k); });
     
     return std::make_pair(iter, bucket);
@@ -113,7 +135,7 @@ typename hash_map<Key, T, KeyEqual, Hash>::value_type*
     hash_map<Key, T, KeyEqual, Hash>::find(const key_type& k)
 {
     auto [it, bucket] = findElement(k);
-    if(it == end(mBuckets[bucket]))
+    if(it == std::end(mBuckets[bucket]))
     {
         return nullptr;
     }
@@ -132,7 +154,7 @@ template<typename Key, typename T, typename KeyEqual, typename Hash>
 T& hash_map<Key, T, KeyEqual, Hash>::operator[](const key_type& k)
 {
     auto [it, bucket] = findElement(k);
-    if(it == end(mBuckets[bucket]))
+    if(it == std::end(mBuckets[bucket]))
     {
         mSize++;
         mBuckets[bucket].push_back(std::make_pair(k, T()));
@@ -148,7 +170,7 @@ template<typename Key, typename T, typename KeyEqual, typename Hash>
 void hash_map<Key, T, KeyEqual, Hash>::insert(const value_type& x)
 {
     auto [it, bucket] = findElement(x.first);
-    if(it != end(mBuckets[bucket]))
+    if(it != std::end(mBuckets[bucket]))
     {
         return;
     }
@@ -163,7 +185,7 @@ template<typename Key, typename T, typename KeyEqual, typename Hash>
 void hash_map<Key, T, KeyEqual, Hash>::erase(const key_type& k)
 {
     auto [it, bucket] = findElement(k);
-    if(it != end(mBuckets[bucket]))
+    if(it != std::end(mBuckets[bucket]))
     {
         mBuckets[bucket].erase(it);
         mSize--;
@@ -218,6 +240,73 @@ hash_map<Key, T, KeyEqual, Hash>&
     swap(rhs);
     return *this;
 }
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+bool hash_map<Key, T, KeyEqual, Hash>::empty() const
+{
+    return mSize == 0;
+}
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+typename hash_map<Key, T, KeyEqual, Hash>::size_type hash_map<Key, T, KeyEqual, Hash>::size() const
+{
+    return mSize;
+}
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+typename hash_map<Key, T, KeyEqual, Hash>::size_type hash_map<Key, T, KeyEqual, Hash>::max_size() const
+{
+    return mBuckets[0].max_size();
+}
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+typename hash_map<Key, T, KeyEqual, Hash>::iterator hash_map<Key, T, KeyEqual, Hash>::begin()
+{
+    if(mSize == 0)
+    {
+        return end();
+    }
+    for(size_t i = 0; i < mBuckets.size(); ++i)
+    {
+        if(!mBuckets[i].empty())
+        {
+            return hash_map_iterator<hash_map_type>(i, std::begin(mBuckets[i]), this);
+        }
+    }
+    return end();
+}
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+typename hash_map<Key, T, KeyEqual, Hash>::iterator hash_map<Key, T, KeyEqual, Hash>::end()
+{
+    size_t bucket = mBuckets.size()-1;
+    return hash_map_iterator<hash_map_type>(bucket, std::end(mBuckets[bucket]), this);
+}
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+typename hash_map<Key, T, KeyEqual, Hash>::const_iterator hash_map<Key, T, KeyEqual, Hash>::begin() const
+{
+    return const_cast<hash_map_type*>(this)->begin();
+}
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+typename hash_map<Key, T, KeyEqual, Hash>::const_iterator hash_map<Key, T, KeyEqual, Hash>::end() const
+{
+    return const_cast<hash_map_type*>(this)->end();
+}
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+typename hash_map<Key, T, KeyEqual, Hash>::const_iterator hash_map<Key, T, KeyEqual, Hash>::cbegin() const
+{
+    return begin();
+}
+
+template<typename Key, typename T, typename KeyEqual, typename Hash>
+typename hash_map<Key, T, KeyEqual, Hash>::const_iterator hash_map<Key, T, KeyEqual, Hash>::cend() const
+{
+    return end();
+}
+
 }
 
 

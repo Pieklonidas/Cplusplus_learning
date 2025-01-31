@@ -4,6 +4,7 @@
 #include <numeric>
 #include <iterator>
 #include <set>
+#include <map>
 #include "HashMap.hpp"
 
 void streamIteratorsExample()
@@ -223,12 +224,38 @@ void hashMapExample()
     }
 }
 
+void hashMapIteratorExample()
+{
+    ProCpp::hash_map<std::string, int> myHash;
+    myHash.insert(std::make_pair("KeyOne", 100));
+    myHash.insert(std::make_pair("KeyTwo", 200));
+    myHash.insert(std::make_pair("KeyThree", 300));
+
+    for (auto it = myHash.cbegin(); it != myHash.cend(); ++it) {
+        std::cout << it->first << " maps to " << (*it).second << std::endl;
+    }
+
+    for (auto& p : myHash) {
+        std::cout << p.first << " maps to " << p.second << std::endl;
+    }
+
+    for (auto&[key, value] : myHash) {
+        std::cout << key << " maps to " << value << std::endl;
+    }
+
+    std::map<std::string, int> myMap(cbegin(myHash), cend(myHash));
+    for (auto& p : myMap) {
+        std::cout << p.first << " maps to " << p.second << std::endl;
+    }
+}
+
 int main()
 {  
     // streamIteratorsExample();
     // iteratorAdaptorsExample();
     // findAllExample();
     // iteratorTraitsExample();
-    hashMapExample();
+    // hashMapExample();
+    hashMapIteratorExample();
     return 0;
 }
