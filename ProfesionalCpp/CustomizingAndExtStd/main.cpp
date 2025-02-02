@@ -150,7 +150,7 @@ void hashMapExample()
     myHash.insert(std::make_pair(6, 60));
 
     auto x = myHash.find(4);
-    if(x != nullptr)
+    if(x != myHash.end())
     {
         std::cout << "4 maps to " << x->second << std::endl;
     }
@@ -161,7 +161,7 @@ void hashMapExample()
 
     myHash.erase(4);
     auto x2 = myHash.find(4);
-    if(x2 != nullptr)
+    if(x2 != myHash.end())
     {
         std::cout << "4 maps to " << x2->second << std::endl;
     }
@@ -174,7 +174,7 @@ void hashMapExample()
     myHash[4] = 64;
 
     auto x3 = myHash.find(4);
-    if(x3 != nullptr)
+    if(x3 != myHash.end())
     {
         std::cout << "4 maps to " << x3->second << std::endl;
     }
@@ -186,7 +186,7 @@ void hashMapExample()
     ProCpp::hash_map<int, int> other(std::equal_to<>(), 11);
     ProCpp::swap(other, myHash);
     auto x4 = other.find(4);
-    if(x4 != nullptr)
+    if(x4 != other.end())
     {
         std::cout << "4 maps to " << x4->second << std::endl;
     }
@@ -200,7 +200,7 @@ void hashMapExample()
     myHash3 = myHash2;
 
     auto x5 = myHash3.find(4);
-    if(x5 != nullptr)
+    if(x5 != myHash3.end())
     {
         std::cout << "4 maps to " << x5->second << std::endl;
     }
@@ -214,7 +214,7 @@ void hashMapExample()
     myHash5 = std::move(myHash4);
 
     auto x6 = myHash5.find(4);
-    if(x6 != nullptr)
+    if(x6 != myHash5.end())
     {
         std::cout << "4 maps to " << x6->second << std::endl;
     }
@@ -246,6 +246,28 @@ void hashMapIteratorExample()
     std::map<std::string, int> myMap(cbegin(myHash), cend(myHash));
     for (auto& p : myMap) {
         std::cout << p.first << " maps to " << p.second << std::endl;
+    }
+
+    ProCpp::hash_map<std::string, int> myHash2 {
+        { "KeyOne", 100 },
+        { "KeyTwo", 200 },
+        { "KeyThree", 300 } };
+
+    for (auto& p : myHash2) {
+        std::cout << p.first << " maps2 to " << p.second << std::endl;
+    }
+
+    myHash2 = {
+        { "KeyFour", 400 },
+        { "KeyFive", 500 },
+        { "KeySix", 600 } };
+    
+    myHash2.insert({
+        { "KeySeven", 700 },
+        { "KeyEight", 800 } });
+
+    for (auto& p : myHash2) {
+        std::cout << p.first << " maps2 to " << p.second << std::endl;
     }
 }
 
