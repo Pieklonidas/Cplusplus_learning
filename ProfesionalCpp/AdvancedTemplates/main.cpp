@@ -1,7 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <deque>
+#include <string_view>
+#include <string>
 #include "PartialSpecializationPointerClass.hpp"
+#include "MixinClasses.hpp"
 
 template<typename T,
     template <typename E, typename Allocator = std::allocator<E>> class Container = std::vector>
@@ -83,10 +86,69 @@ void partialSpecializationExample()
     std::cout << "Still x: " << x << std::endl;
 }
 
+void handleValue(int value) { std::cout << "Integer: " << value << std::endl; }
+void handleValue(double value) { std::cout << "Double: " << value << std::endl; }
+void handleValue(std::string_view value) { std::cout << "String: " << value << std::endl; }
+
+void processValues() {};
+
+template <typename T1, typename... Tn>
+void processValues(T1&& arg1, Tn&&... args)
+{
+    handleValue(std::forward<T1>(arg1));
+    processValues(std::forward<Tn>(args)...);
+}
+
+void variadicTemplateFunctionExample()
+{
+    processValues(1, 2, 3.56, "test", 1.1f);
+}
+
+void mixinClassesExample()
+{
+    MyClass<Mixin1, Mixin2> a(Mixin1(11), Mixin2(22));
+    a.Mixin1Func();
+    a.Mixin2Func();
+
+    MyClass<Mixin1> b(Mixin1(33));
+    b.Mixin1Func();
+
+    MyClass<> c;
+}
+
+template <typename... Tn>
+void processValues2(const Tn&... args)
+{
+    (handleValue(args), ...);
+}
+
+template <typename... Values>
+void printValues(const Values&... values)
+{
+    ((std::cout << values << std::endl), ...);
+}
+
+template <typename T, typename... Values>
+double sumValues(const T& init, const Values&... values)
+{
+    return (init + ... + values);
+}
+
+void foldingExpressionsExample()
+{
+    processValues2(1, "test", 2.34);
+    printValues(1, "test", 2.34);
+    std::cout << sumValues(4.34) << std::endl;
+    std::cout << sumValues(2.34, 2.12, 5.34, 10.17) << std::endl;
+}
+
 int main()
 {
     // templateTemplateParamterExample();
     // nonTypeParamterExample();
-    partialSpecializationExample();
+    // partialSpecializationExample();
+    // variadicTemplateFunctionExample();
+    // mixinClassesExample();
+    foldingExpressionsExample();
     return 0;
 }
