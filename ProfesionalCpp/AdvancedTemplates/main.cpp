@@ -3,8 +3,14 @@
 #include <deque>
 #include <string_view>
 #include <string>
+#include <tuple>
+#include <utility>
+#include <type_traits>
 #include "PartialSpecializationPointerClass.hpp"
 #include "MixinClasses.hpp"
+#include "Factorial.hpp"
+#include "Loop.hpp"
+#include "TuplePrint.hpp"
 
 template<typename T,
     template <typename E, typename Allocator = std::allocator<E>> class Container = std::vector>
@@ -142,6 +148,145 @@ void foldingExpressionsExample()
     std::cout << sumValues(2.34, 2.12, 5.34, 10.17) << std::endl;
 }
 
+constexpr unsigned long long factorial(unsigned char f)
+{
+    if(f==0)
+    {
+        return 1;
+    }
+    else
+    {
+        return f*factorial(f-1);
+    }
+}
+
+void DoWork(int i)
+{
+    std::cout << "DoWork(" << i << ")" << std::endl;
+}
+
+void DoWork2(std::string str, int i)
+{
+    std::cout << "DoWork2(" << str << ", " << i << ")" << std::endl;
+}
+
+void metaprogrammingExample()
+{
+    std::cout << Factorial<6>::val << std::endl; // compile time
+    constexpr auto f1 = factorial(6); // compile time
+    std::cout << f1 << std::endl;
+    Loop<3>::Do(DoWork);
+    Loop<2>::Do([](int i) { DoWork2("TestStr", i); });
+    using MyTuple = std::tuple<int, std::string, bool>;
+    MyTuple t1(16, "Test", true);
+    tuple_print<MyTuple, std::tuple_size<MyTuple>::value> tp(t1);
+    MyTuple t2(78, "ELO", false);
+    tuple_print2(t2);
+}
+
+template <typename T>
+void process_helper(const T& t, std::true_type)
+{
+    std::cout << t << " is an integral type." << std::endl;
+}
+
+template <typename T>
+void process_helper(const T& t, std::false_type)
+{
+    std::cout << t << " is a non-integral type." << std::endl;
+}
+
+template <typename T>
+void process(const T& t)
+{
+    process_helper(t, typename std::is_integral<T>::type());
+}
+
+template <typename T>
+void process2(const T& t)
+{
+    if constexpr (std::is_integral_v<T>)
+    {
+        std::cout << t << " is an integral type." << std::endl;
+    }
+    else
+    {
+        std::cout << t << " is a non-integral type." << std::endl;
+    }
+}
+
+template <typename T1, typename T2>
+void same(const T1& t1, const T2& t2)
+{
+    bool areTypesTheSame = std::is_same_v<T1, T2>;
+    std::cout << "'" << t1 << "' and '" << t2 << "' are ";
+    std::cout << (areTypesTheSame ? "the same types." : "different types.") << std::endl;
+}
+
+template <typename T1, typename T2>
+std::enable_if_t<std::is_same_v<T1, T2>, bool>
+    check_type(const T1& t1, const T2& t2)
+{
+    std::cout << "'" << t1 << "' and '" << t2 << "' ";
+    std::cout << "are the same types." << std::endl;
+    return true;
+}
+
+template <typename T1, typename T2>
+std::enable_if_t<!std::is_same_v<T1, T2>, bool>
+    check_type(const T1& t1, const T2& t2)
+{
+    std::cout << "'" << t1 << "' and '" << t2 << "' ";
+    std::cout << "are different types." << std::endl;
+    return false;
+}
+
+void typeTraitsExample()
+{
+    if(std::is_integral<int>::value)
+    {
+        std::cout << "int is integral" << std::endl;
+    }
+    else
+    {
+        std::cout << "int is not integral" << std::endl;
+    }
+
+    if(std::is_class<int>::value)
+    {
+        std::cout << "int is a class" << std::endl;
+    }
+    else
+    {
+        std::cout << "int is not a class" << std::endl;
+    }
+
+    if(std::is_class_v<std::string>)
+    {
+        std::cout << "string is a class" << std::endl;
+    }
+    else
+    {
+        std::cout << "string is not a class" << std::endl;
+    }
+
+    process(132);
+    process(2.9);
+    process("Test");
+
+    process2(162);
+    process2(12.9);
+    process2("Test2");
+
+    same(1, 32);
+    same(1, 3.01);
+    same(3.01, "Test");
+
+    check_type(1, 32);
+    check_type(1, 3.01);
+    check_type("TestCheck", 32.1);
+}
+
 int main()
 {
     // templateTemplateParamterExample();
@@ -149,6 +294,8 @@ int main()
     // partialSpecializationExample();
     // variadicTemplateFunctionExample();
     // mixinClassesExample();
-    foldingExpressionsExample();
+    // foldingExpressionsExample();
+    // metaprogrammingExample();
+    typeTraitsExample();
     return 0;
 }
