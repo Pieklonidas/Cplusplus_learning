@@ -2,6 +2,8 @@
 #include <thread>
 #include <functional>
 #include <stdexcept>
+#include <atomic>
+#include <chrono>
 #include "Counter.hpp"
 #include "Request.hpp"
 
@@ -110,12 +112,71 @@ void threadExceptionsExample()
     
 }
 
+using namespace std::chrono_literals;
+
+void increment(int& counter)
+{
+    for(int i = 0; i < 100; i++)
+    {
+        ++counter;
+        std::this_thread::sleep_for(1ms);
+    }
+}
+
+void incrementAtomic(std::atomic<int>& counter)
+{
+    for(int i = 0; i < 100; ++i)
+    {
+        ++counter;
+        std::this_thread::sleep_for(1ms);
+    }
+}
+
+void AtomicExample()
+{   
+    int counter = 0;
+    std::vector<std::thread> threads;
+    for(int i = 0; i < 10; ++i)
+    {
+        threads.push_back(std::thread{ increment, std::ref(counter) });
+    }
+
+    for(auto& t : threads)
+    {
+        t.join();
+    }
+    std::cout << "Result for data race = " << counter << std::endl;
+
+    std::atomic<int> counterAtomic(0);
+    std::vector<std::thread> threadsAtomic;
+    for(int i = 0; i < 10; ++i)
+    {
+        threadsAtomic.push_back(std::thread{ incrementAtomic, std::ref(counterAtomic) });
+    }
+
+    for(auto& t : threadsAtomic)
+    {
+        t.join();
+    }
+    std::cout << "Result for data race = " << counterAtomic << std::endl;
+}
+
+void AtomicOperationsExample()
+{
+    std::atomic<int> value(10);
+    std::cout << "Value = " << value << std::endl;
+    int fetched = value.fetch_add(4);
+    std::cout << "Fetched = " << fetched << std::endl;
+    std::cout << "Value = " << value << std::endl;
+}
+
 int main()
 {
     // threadExampleFunction();
     // threadExampleFunctionObject();
     // threadExampleLambda();
     // threadExampleMemberFunction();
-    threadExceptionsExample();
+    // threadExceptionsExample();
+    AtomicExample();
     return 0;
 }
