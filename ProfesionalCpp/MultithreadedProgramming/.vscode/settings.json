@@ -67,6 +67,7 @@
         "optional": "cpp",
         "numeric": "cpp",
         "stop_token": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "mutex": "cpp"
     }
 }

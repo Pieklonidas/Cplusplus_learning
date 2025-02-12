@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <atomic>
 #include <chrono>
+#include <mutex>
 #include "Counter.hpp"
 #include "Request.hpp"
 
@@ -170,6 +171,65 @@ void AtomicOperationsExample()
     std::cout << "Value = " << value << std::endl;
 }
 
+std::once_flag gOnceFlag;
+
+void initializeSharedResources()
+{
+    std::cout << "Shared resources initialized." << std::endl;
+}
+
+void processingFunction()
+{
+    std::call_once(gOnceFlag, initializeSharedResources);
+
+    std::cout << "Processing" << std::endl;
+}
+
+void callOnceExample()
+{
+    std::vector<std::thread> threads(3);
+    for(auto& t : threads)
+    {
+        t = std::thread{ processingFunction };
+    }
+
+    for(auto& t : threads)
+    {
+        t.join();
+    }
+}
+
+std::atomic<bool> gInitialized(false);
+std::mutex gMutex;
+
+void processingFunction2()
+{
+    if(!gInitialized)
+    {
+        std::unique_lock lock(gMutex);
+        if(!gInitialized)
+        {
+            initializeSharedResources();
+            gInitialized = true;
+        }
+    }
+    std::cout << "OK" << std::endl;
+}
+
+void doubleCheckedExample()
+{
+    std::vector<std::thread> threads;
+    for(int i = 0; i < 5; ++i)
+    {
+        threads.push_back(std::thread{ processingFunction2 });
+    }
+
+    for(auto& t : threads)
+    {
+        t.join();
+    }
+}
+
 int main()
 {
     // threadExampleFunction();
@@ -177,6 +237,8 @@ int main()
     // threadExampleLambda();
     // threadExampleMemberFunction();
     // threadExceptionsExample();
-    AtomicExample();
+    // AtomicExample();
+    // callOnceExample();
+    doubleCheckedExample();
     return 0;
 }
