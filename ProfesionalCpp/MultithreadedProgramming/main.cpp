@@ -5,6 +5,9 @@
 #include <atomic>
 #include <chrono>
 #include <mutex>
+#include <condition_variable>
+#include <queue>
+#include <future>
 #include "Counter.hpp"
 #include "Request.hpp"
 
@@ -230,6 +233,97 @@ void doubleCheckedExample()
     }
 }
 
+void DoWork(std::promise<int>  thePromise)
+{
+    thePromise.set_value(42);
+}
+
+void promiseExample()
+{
+    std::promise<int> myPromise;
+    auto theFuture = myPromise.get_future();
+    std::thread theThread{ DoWork, std::move(myPromise) };
+    int result = theFuture.get();
+    std::cout << "Result is: " << result << std::endl;
+    theThread.join();
+}
+
+int CalculateSum(int a, int b) { return a+b; }
+
+void packagedTaskExample()
+{
+    std::packaged_task<int(int, int)> task(CalculateSum);
+    auto theFuture = task.get_future();
+    std::thread theThread{ std::move(task), 39, 3 };
+
+    int result = theFuture.get();
+    std::cout << result << std::endl;
+
+    theThread.join();
+}
+
+int calculate()
+{
+    return 123;
+}
+
+void asyncExample()
+{
+    auto myFuture = std::async(calculate);
+    int result = myFuture.get();
+    std::cout << result << std::endl;
+}
+
+int calculate2()
+{
+    throw std::runtime_error("Exception thronw from calculate().");
+}
+
+void exceptionHandlingExample()
+{
+    auto myFuture = std::async(std::launch::async, calculate2);
+
+    try
+    {
+        int result = myFuture.get();
+        std::cout << result << std::endl;
+    }
+    catch(const std::exception& e)
+    {
+        std::cout << "Caught exception: " << e.what() << std::endl;
+    }
+}
+
+void sharedFutureExample()
+{
+    std::promise<void> thread1Started, thread2Started;
+
+    std::promise<int> signalPromise;
+    auto signalFuture = signalPromise.get_future().share();
+    
+    auto function1 = [&thread1Started, signalFuture]
+    {
+        thread1Started.set_value();
+        int parameter = signalFuture.get();
+        std::cout << "Thread1: " << parameter << std::endl;
+    };
+
+    auto function2 = [&thread2Started, signalFuture]
+    {
+        thread2Started.set_value();
+        int parameter = signalFuture.get();
+        std::cout << "Thread2: " << parameter << std::endl;
+    };
+
+    auto result1 = std::async(std::launch::async, function1);
+    auto result2 = std::async(std::launch::async, function2);
+
+    thread1Started.get_future().wait();
+    thread2Started.get_future().wait();
+
+    signalPromise.set_value(42);
+}
+
 int main()
 {
     // threadExampleFunction();
@@ -239,6 +333,11 @@ int main()
     // threadExceptionsExample();
     // AtomicExample();
     // callOnceExample();
-    doubleCheckedExample();
+    // doubleCheckedExample();
+    // promiseExample();
+    // packagedTaskExample();
+    // asyncExample();
+    // exceptionHandlingExample();
+    sharedFutureExample();
     return 0;
 }
