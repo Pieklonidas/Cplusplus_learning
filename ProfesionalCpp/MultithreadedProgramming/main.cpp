@@ -7,9 +7,11 @@
 #include <mutex>
 #include <condition_variable>
 #include <queue>
+#include <sstream>
 #include <future>
 #include "Counter.hpp"
 #include "Request.hpp"
+#include "Logger.hpp"
 
 void counter(int id, int numIterations)
 {
@@ -324,6 +326,32 @@ void sharedFutureExample()
     signalPromise.set_value(42);
 }
 
+void logSomeMessages(int id, Logger& logger)
+{
+    for(int i = 0; i < 10; i++)
+    {
+        std::stringstream ss;
+        ss << "Log entry " << i << " from thread " << id;
+        logger.log(ss.str());
+    }
+}
+
+void loggerExample()
+{
+    Logger logger;
+    std::vector<std::thread> threads;
+
+    for(int i = 0; i < 10; ++i)
+    {
+        threads.emplace_back(logSomeMessages, i, std::ref(logger));
+    }
+
+    for(auto& t : threads)
+    {
+        t.join();
+    }
+}
+
 int main()
 {
     // threadExampleFunction();
@@ -338,6 +366,7 @@ int main()
     // packagedTaskExample();
     // asyncExample();
     // exceptionHandlingExample();
-    sharedFutureExample();
+    // sharedFutureExample();
+    loggerExample();
     return 0;
 }
