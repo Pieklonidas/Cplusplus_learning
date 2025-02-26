@@ -1,0 +1,17 @@
+trickyFunction(): retrieved cmd 4: UserCommand
+startTimeDebugModeExample(): C:\Users\48727\Desktop\Cplusplus_learning\ProfesionalCpp\Debuging\main.exe
+startTimeDebugModeExample(): -d
+trickyFunction(): given argument: ComplicatedClass
+trickyFunction(): retrieved cmd 0: UserCommand
+trickyFunction(): retrieved cmd 1: UserCommand
+trickyFunction(): retrieved cmd 2: UserCommand
+trickyFunction(): retrieved cmd 3: UserCommand
+trickyFunction(): retrieved cmd 4: UserCommand
+startTimeDebugModeExample(): C:\Users\48727\Desktop\Cplusplus_learning\ProfesionalCpp\Debuging\main.exe
+startTimeDebugModeExample(): -d
+trickyFunction(): given argument: ComplicatedClass
+trickyFunction(): retrieved cmd 0: UserCommand
+trickyFunction(): retrieved cmd 1: UserCommand
+trickyFunction(): retrieved cmd 2: UserCommand
+trickyFunction(): retrieved cmd 3: UserCommand
+trickyFunction(): retrieved cmd 4: UserCommand
